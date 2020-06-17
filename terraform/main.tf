@@ -26,8 +26,8 @@ limitations under the License.
 // Provides access to available Google Container Engine versions in a zone for a given project.
 // https://www.terraform.io/docs/providers/google/d/google_container_engine_versions.html
 data "google_container_engine_versions" "on-prem" {
-  zone    = "${var.zone}"
-  project = "${var.project}"
+  location    = var.zone
+  project = var.project
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////
