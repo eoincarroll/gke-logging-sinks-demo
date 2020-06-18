@@ -1,12 +1,10 @@
+ 
 /*
 Copyright 2018 Google LLC
-
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
-
     https://www.apache.org/licenses/LICENSE-2.0
-
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -26,8 +24,8 @@ limitations under the License.
 // Provides access to available Google Container Engine versions in a zone for a given project.
 // https://www.terraform.io/docs/providers/google/d/google_container_engine_versions.html
 data "google_container_engine_versions" "on-prem" {
-  zone    = "${var.zone}"
-  project = "${var.project}"
+  location    = var.zone
+  project = var.project
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////
@@ -68,9 +66,9 @@ resource "google_bigquery_dataset" "gke-bigquery-dataset" {
 // https://www.terraform.io/docs/providers/google/d/google_container_cluster.html
 resource "google_container_cluster" "primary" {
   name               = "stackdriver-logging"
-  zone               = "${var.zone}"
+  location               = var.zone
   initial_node_count = 2
-  min_master_version = "${data.google_container_engine_versions.on-prem.latest_master_version}"
+  min_master_version = data.google_container_engine_versions.on-prem.latest_master_version
 
   node_config {
     oauth_scopes = [
@@ -87,11 +85,11 @@ resource "google_container_cluster" "primary" {
   }
 
   provisioner "local-exec" {
-    command = "kubectl --namespace default run hello-server --image gcr.io/google-samples/hello-app:1.0 --port 8080"
+    command = "kubectl --namespace default create deployment hello-server --image=gcr.io/google-samples/hello-app:v1"
   }
 
   provisioner "local-exec" {
-    command = "kubectl --namespace default expose deployment hello-server --type \"LoadBalancer\" "
+    command = "kubectl --namespace default expose deployment hello-server --type \"LoadBalancer\" --port=8080"
   }
 }
 
@@ -137,3 +135,10 @@ resource "google_project_iam_binding" "log-writer-bigquery" {
     "${google_logging_project_sink.bigquery-sink.writer_identity}",
   ]
 }
+
+
+
+
+
+
+
